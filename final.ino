@@ -2,9 +2,11 @@ int rf = 2;
 int rb = 3;
 int lf = 5;
 int lb = 4;
+int e1 =3 ;
+int e2 =5 ;
 int v = 150;
 String path;
-int a[5],e;
+int a[5],e,le,j=0,de=10;
 void setup()
 {
 
@@ -20,23 +22,13 @@ void setup()
 
   
 }
-void straight(int dv1,int dv2){    //arguments are for dv(error)
+void straight(int dv1){    //arguments are for dv(error)
 
-  analogWrite(rf,v+dv2);
-  analogWrite(lf,v+dv1);
+  analogWrite(e1,v+dv1);
+  analogWrite(e2,v-dv1);
+  digitalWrite(rf,HIGH);
+  digitalWrite(lf,HIGH);
   digitalWrite(rb,LOW);
-  digitalWrite(lb,LOW); 
-}
-void right(){
-  analogWrite(rf,v);
-  analogWrite(lb,v);
-  digitalWrite(rb,LOW);
-  digitalWrite(lf,LOW); 
-}
-void left(){
-  analogWrite(rb,v);
-  analogWrite(lf,v);
-  digitalWrite(rf,LOW);
   digitalWrite(lb,LOW); 
 }
 void rev(){
@@ -58,8 +50,8 @@ void hardRight()                          //90 degree right active at turns only
   digitalWrite(lb,HIGH);
   digitalWrite(lf,LOW);
   digitalWrite(rb,LOW);
-  delay(175);
-  
+  delay(225);
+  stp();
 }
 void hardLeft()                          //90 degree left active at turns only
 {
@@ -67,15 +59,16 @@ void hardLeft()                          //90 degree left active at turns only
   digitalWrite(rb,HIGH);
   digitalWrite(rf,LOW);
   digitalWrite(lb,LOW);
-  delay(175);
+  delay(225);
+  stp();
   
 }
-void reading()                          // takes reading from sensors and converts it into a single value and returns to the main function
+int reading()                          // takes reading from sensors and converts it into a single value and returns to the main function
 {int ledNo=0;
 int val = 0;
   for(int i=1;i<6;i++)
   {
-    a[i]=!digitalRead(i);
+    a[i]=!digitalRead(i+5);
     if(a[i-1]==1)
     {
       ledNo++;
@@ -96,35 +89,38 @@ int val = 0;
     }
   }
 }
-void correction(int x)                 // damps dv and returns to main function
+int correction(int x)                 // damps dv and returns to main function
 {int y;
 e=30-x;
-y=0.5*e+0.1*((e-le)/50);
+y=0.5*e+0.1*(e-le);
 le=e;
 return y;
  }
 
 
 void loop()
-{
+{ 
   int val=reading();
-  if(val>25 && val<35)                          // bot is almost at centre
-  {
-    straight(0,0);  
-  }else if(val>35 && val<51)                    //bot is deviated 
-  { int dv3 = correction();
-    straight(dv3,-dv3);
-  }else if(val<25 && val>0)
-  {
-    int dv3 = correction();
-    straight(-dv3,dv3);
+  if(val>=10 && val<51)                    //bot is deviated 
+  { int dv3 = correction(val);
+    straight(dv3);
   }else if(val>50)                             //check reading function to understand this condition
+  { delay(de);
+  if(!digitalRead(8)==HIGH)
   {
+    path[j] = 'r';
+    j++;
+  }
     hardRight();
   }else if(val<0)
+  { delay(de);
+    if(!digitalRead(8)==HIGH)
   {
+    path[j] = 'l';
+    j++;
+  }
     hardLeft();
+    
   }
   delay(50);
 }
-
